@@ -1,24 +1,23 @@
 #!/bin/bash
-set -x
 export BUILD_SETUP=1
 export DOCKER_UID=davidwalter
 export DEBIAN_RELEASE=8.9
-export GLUSTERFS_VERSION_MAJOR=3.12
-export GLUSTERFS_VERSION_MINOR=2
-export GLUSTERFS_VERSION=${GLUSTERFS_VERSION_MAJOR}.${GLUSTERFS_VERSION_MINOR}
+export GFS_VERSION_MAJOR=3.12
+export GFS_VERSION_MINOR=2
+export GFS_VERSION=${GFS_VERSION_MAJOR}.${GFS_VERSION_MINOR}
 export SSH_PORT=2222
 export GLUSTER_VOL=vol0
 export GLUSTER_BRICK_PATH=/gluster_volume
 # if you need more version specific services
-# export GFS_SERVER_NAME=gfs-${GLUSTERFS_VERSION_MAJOR/./-}d${DEBIAN_RELEASE/./-}-sv
-# export GFS_CLIENT_NAME=gfs-${GLUSTERFS_VERSION_MAJOR/./-}d${DEBIAN_RELEASE/./-}-cl
-# export GFS_STORAGE=gfs-stor-${GLUSTERFS_VERSION_MAJOR/./-}
-# export GFS_SERVICE=gfs-${GLUSTERFS_VERSION_MAJOR/./-}
+# export GFS_SERVER_NAME=gfs-${GFS_VERSION_MAJOR/./-}d${DEBIAN_RELEASE/./-}-sv
+# export GFS_CLIENT_NAME=gfs-${GFS_VERSION_MAJOR/./-}d${DEBIAN_RELEASE/./-}-cl
+# export GFS_STORAGE=gfs-stor-${GFS_VERSION_MAJOR/./-}
+# export GFS_SERVICE=gfs-${GFS_VERSION_MAJOR/./-}
 export GFS_SERVER_NAME=gfs-server
 export GFS_CLIENT_NAME=gfs-client
 export GFS_STORAGE=gfs-stor
 export GFS_SERVICE=gfs
 
-export GFS_SERVER_IMAGE=${DOCKER_UID}/glusterfs-server:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION}
-export GFS_CLIENT_IMAGE=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION}
+export GFS_SERVER_IMAGE=${DOCKER_UID}/glusterfs-server:debian${DEBIAN_RELEASE}-${GFS_VERSION}
+export GFS_CLIENT_IMAGE=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION}
 

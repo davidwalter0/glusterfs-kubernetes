@@ -6,8 +6,8 @@ if [[ "$(which applytmpl)" == "" ]]; then
     fi
 fi
 . ../environment
+set -x
 applytmpl < Dockerfile.tmpl > Dockerfile
 docker build --tag=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION} .
 docker push ${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION}
-
-
+set -x

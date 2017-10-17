@@ -11,18 +11,22 @@ all:										\
 	client/built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}	\
 	server/all-in-one.yaml
 
-.server:
+.server: environment Makefile server/build server/Dockerfile.tmpl
 	make -C server -f ../Makefile bld-server
-.client:
+.client: environment Makefile client/build client/Dockerfile.tmpl
 	make -C client -f ../Makefile bld-client
 
 bld-server:
+	@echo Building $@
 	./build
 	touch built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}
+	@echo Complete $@
 
 bld-client:
+	@echo Building $@
 	./build
 	touch built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}
+	@echo Complete $@
 
 client/built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}: .client
 	touch $@ $<

@@ -65,13 +65,11 @@ spec:
   - name: nfs-portmap
     port: 2049
     targetPort: 2049
-  selector:
-    component: {{ env "GFS_STORAGE" }}
+  # selector:
+  #   component: {{ env "GFS_STORAGE" }}
 ---
 kind: StatefulSet
 apiVersion: apps/v1beta1
-# kind: ReplicationController
-# apiVersion: v1
 metadata:
   labels:
     component: {{ env "GFS_STORAGE" }}
@@ -79,21 +77,19 @@ metadata:
 spec:
   serviceName: {{ env "GFS_SERVICE" }}
   replicas: 2
-  selector:
-    component: {{ env "GFS_STORAGE" }}
   template:
     metadata:
       labels:
         component: {{ env "GFS_STORAGE" }}
     spec:
-      nodeSelector:
-        gluster.io/schedulable: "true"
+      # nodeSelector:
+      #   gluster.io/schedulable: "true"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: "gluster-scheduleable"
+                - key: "gluster.io/schedulable"
                   operator: In
                   values: ["true"]
       serviceAccount: glusterfs
@@ -124,8 +120,6 @@ spec:
         env:
         - name: GLUSTER_VOLUME_TYPE
           value: distributed
-        - name: GLUSTER_BRICK_PATH
-          value:
         - name: GLUSTER_VOL
           value: shared0
         - name: GLUSTER_BRICK_PATH
@@ -137,7 +131,7 @@ spec:
         - name: DEBUG
           value: "1"
         - name: SSH_PORT
-          value: {{ env "SSH_PORT" }}
+          value: '{{ env "SSH_PORT" }}'
         volumeMounts:
           - name: local0
             mountPath: /gluster_volume
@@ -147,8 +141,6 @@ spec:
 ---
 kind: StatefulSet
 apiVersion: apps/v1beta1
-# kind: ReplicationController
-# apiVersion: v1
 metadata:
   labels:
     component: {{ env "GFS_CLIENT_NAME" }}
@@ -156,21 +148,19 @@ metadata:
 spec:
   serviceName: {{ env "GFS_SERVICE" }}
   replicas: 2
-  selector:
-    component: {{ env "GFS_CLIENT_NAME" }}
   template:
     metadata:
       labels:
         component: {{ env "GFS_CLIENT_NAME" }}
     spec:
-      nodeSelector:
-        gluster.io/schedulable: "true"
+      # nodeSelector:
+      #   gluster.io/schedulable: "true"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: "gluster-scheduleable"
+                - key: "gluster.io/schedulable"
                   operator: In
                   values: ["true"]
       serviceAccount: glusterfs
