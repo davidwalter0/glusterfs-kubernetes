@@ -4,32 +4,32 @@ ENV GLUSTER_MOUNTPOINT=/gluster_mount/shared0
 ENV GFS_VERSION={{env "GFS_VERSION"}}
 ENV GFS_VERSION_MINOR={{env "GFS_VERSION_MINOR"}}
 ENV GFS_VERSION={{env "GFS_VERSION"}}
-ENV GFS_VERSION_PATH={{ env "GFS_VERSION" }/{{ env "GFS_VERSION" }}
+ENV GFS_VERSION_PATH={{env "GFS_VERSION"}}/{{env "GFS_VERSION"}}
 
 COPY root /
 
-RUN apt-get update && apt-get install -y wget ca-certificates &&                                                                \
-    wget -O - http://download.gluster.org/pub/gluster/glusterfs/{{ env "GFS_VERSION_MAJOR"}}/rsa.pub | apt-key add - &&         \
-    echo deb https://download.gluster.org/pub/gluster/glusterfs/{{ env "GFS_VERSION_PATH"}}/Debian/jessie/apt/                  \
-        jessie main > /etc/apt/sources.list.d/gluster.list &&                                                                   \
-    apt-get update && apt-get install -y supervisor openssh-server dnsutils sshpass apt-transport-https &&                      \
-    apt-get dist-upgrade -y &&                                                                                                  \
-    apt-get install -y  glusterfs-common={{ env "GFS_VERSION"}}* glusterfs-client={{ env "GFS_VERSION"}}*                       \
-                        glusterfs-server={{ env "GFS_VERSION"}}* &&                                                             \
-    apt-get autoclean &&                                                                                                        \
-    apt-get install -y wget ca-certificates &&                                                                  \
-    wget -O - http://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | apt-key add - &&                 \
-    echo deb https://download.gluster.org/pub/gluster/glusterfs/{{ env "GFS_VERSION_PATH" }}/Debian/jessie/apt/ \
-        jessie main > /etc/apt/sources.list.d/gluster.list &&                                                   \
-    wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb &&                \
-    apt-get install -yqq                                                                                        \
-    glusterfs-common={{ env "GFS_VERSION"}}*                    \
-    glusterfs-client={{ env "GFS_VERSION"}}*                    \
-    glusterfs-server={{ env "GFS_VERSION"}}* &&                 \
-    apt-get autoclean &&                                                                                        \
-    dpkg -i dumb-init_1.1.1_amd64.deb &&                                                                        \
-    apt-get remove -y wget ca-certificates &&                                                                   \
-    apt-get autoremove -y &&                                                                                    \
+RUN apt-get update && apt-get install -y wget ca-certificates apt-transport-https &&  \
+    wget -O - http://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_MAJOR"}}/rsa.pub | apt-key add - &&  \
+    echo deb https://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_PATH"}}/Debian/jessie/apt/  \
+        jessie main > /etc/apt/sources.list.d/gluster.list && \
+    apt-get update && apt-get install -y supervisor openssh-server dnsutils sshpass apt-transport-https &&  \
+    apt-get dist-upgrade -y && \
+    apt-get install -y  glusterfs-common={{env "GFS_VERSION"}}* \
+                        glusterfs-client={{env "GFS_VERSION"}}*  \
+                        glusterfs-server={{env "GFS_VERSION"}}* && \
+    apt-get autoclean && \
+    apt-get install -y wget ca-certificates && \
+    wget -O - http://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | apt-key add - && \
+    echo deb http://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_PATH"}}/Debian/jessie/apt/ \
+        jessie main > /etc/apt/sources.list.d/gluster.list && \
+    wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb && \
+    apt-get install -yqq \
+    glusterfs-common={{env "GFS_VERSION"}}*    \
+    glusterfs-client={{env "GFS_VERSION"}}*    \
+    glusterfs-server={{env "GFS_VERSION"}}* && \
+    apt-get autoclean && \
+    dpkg -i dumb-init_1.1.1_amd64.deb && \
+    apt-get autoremove -y && \
     chmod +x /usr/local/bin/*
 
 VOLUME ["${GLUSTER_MOUNTPOINT}"]

@@ -3,37 +3,48 @@ FROM debian:{{env "DEBIAN_RELEASE"}}
 ENV GFS_VERSION_MAJOR={{env "GFS_VERSION_MAJOR"}}
 ENV GFS_VERSION_MINOR={{env "GFS_VERSION_MINOR"}}
 ENV GFS_VERSION={{env "GFS_VERSION"}}
-ENV GFS_VERSION_PATH={{ env "GFS_VERSION_MAJOR" }/{{ env "GFS_VERSION" }}
-ENV GLUSTER_VOL={{ env "GLUSTER_VOL" }}
-ENV GLUSTER_BRICK_PATH={{ env "GLUSTER_BRICK_PATH" }}
+ENV GFS_VERSION_PATH={{env "GFS_VERSION_MAJOR"}}/{{env "GFS_VERSION"}}
+ENV GLUSTER_VOL={{env "GLUSTER_VOL"}}
+ENV GLUSTER_BRICK_PATH={{env "GLUSTER_BRICK_PATH"}}
 ENV GLUSTER_CONF_FLAG=/etc/gluster.env 
 ENV SERVICE_NAME=gluster 
 ENV MAX_VOLUMES=1 
 ENV DEBUG=0 
-ENV SSH_PORT={{ env "SSH_PORT"}}
+ENV SSH_PORT={{env "SSH_PORT"}}
 ENV SSH_USER=root
 
 # execute this on its own as it contains references to previous call
-ENV SSH_OPTS="-p {{ env "SSH_PORT"}} -o ConnectTimeout=20 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+ENV SSH_OPTS="-p {{env "SSH_PORT"}} -o ConnectTimeout=20 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 ADD root /
 
-RUN apt-get update && apt-get install -y wget ca-certificates &&                                                                \
-    wget -O - http://download.gluster.org/pub/gluster/glusterfs/{{ env "GFS_VERSION_MAJOR"}}/rsa.pub | apt-key add - &&         \
-    echo deb https://download.gluster.org/pub/gluster/glusterfs/{{ env "GFS_VERSION_PATH"}}/Debian/jessie/apt/                  \
-        jessie main > /etc/apt/sources.list.d/gluster.list &&                                                                   \
-    apt-get update && apt-get install -y supervisor openssh-server dnsutils sshpass apt-transport-https &&                      \
-    apt-get dist-upgrade -y &&                                                                                                  \
-    apt-get install -y  glusterfs-common={{ env "GFS_VERSION"}}* glusterfs-client={{ env "GFS_VERSION"}}*                       \
-                        glusterfs-server={{ env "GFS_VERSION"}}* &&                                                             \
-    apt-get autoclean &&                                                                                                        \
-    mkdir -p /var/run/sshd /root/.ssh /var/log/supervisor &&                                                                    \
-    perl -p -i -e "s/^Port .*/Port {{ env "SSH_PORT"}}/g" /etc/ssh/sshd_config &&                                               \
-    perl -p -i -e "s/#?PasswordAuthentication .*/PasswordAuthentication yes/g" /etc/ssh/sshd_config &&                          \
-    perl -p -i -e "s/#?PermitRootLogin .*/PermitRootLogin yes/g" /etc/ssh/sshd_config &&                                        \
-    grep ClientAliveInterval /etc/ssh/sshd_config >/dev/null 2>&1 || echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config &&   \
+RUN apt-get update && apt-get install -y wget ca-certificates apt-transport-https &&  \
+    wget -O - http://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_MAJOR"}}/rsa.pub | apt-key add - &&  \
+    echo deb https://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_PATH"}}/Debian/jessie/apt/  \
+        jessie main > /etc/apt/sources.list.d/gluster.list && \
+    apt-get update && apt-get install -y supervisor openssh-server dnsutils sshpass apt-transport-https &&  \
+    apt-get dist-upgrade -y && \
+    apt-get install -y  glusterfs-common={{env "GFS_VERSION"}}* \
+                        glusterfs-client={{env "GFS_VERSION"}}*  \
+                        glusterfs-server={{env "GFS_VERSION"}}* && \
+    apt-get autoclean && \
+    apt-get install -y wget ca-certificates && \
+    wget -O - http://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | apt-key add - && \
+    echo deb http://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_PATH"}}/Debian/jessie/apt/ \
+        jessie main > /etc/apt/sources.list.d/gluster.list && \
+    wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb && \
+    apt-get install -yqq \
+    glusterfs-common={{env "GFS_VERSION"}}*    \
+    glusterfs-client={{env "GFS_VERSION"}}*    \
+    glusterfs-server={{env "GFS_VERSION"}}* && \
+    apt-get autoclean && \
+    mkdir -p /var/run/sshd /root/.ssh /var/log/supervisor && \
+    perl -p -i -e "s/^Port .*/Port {{env "SSH_PORT"}}/g" /etc/ssh/sshd_config && \
+    perl -p -i -e "s/#?PasswordAuthentication .*/PasswordAuthentication yes/g" /etc/ssh/sshd_config && \
+    perl -p -i -e "s/#?PermitRootLogin .*/PermitRootLogin yes/g" /etc/ssh/sshd_config && \
+    grep ClientAliveInterval /etc/ssh/sshd_config >/dev/null 2>&1 || echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config && \
     chmod +x /usr/local/bin/*
 
-VOLUME [ '{{ env "GLUSTER_BRICK_PATH"}}' ]
+VOLUME [ '{{env "GLUSTER_BRICK_PATH"}}' ]
 
 CMD ["/usr/local/bin/run.sh"]

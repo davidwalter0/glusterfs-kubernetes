@@ -7,7 +7,10 @@ if [[ "$(which applytmpl)" == "" ]]; then
 fi
 . ../environment
 set -x
-applytmpl < Dockerfile.tmpl > Dockerfile
-docker build --tag=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION} .
-docker push ${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION}
+if ! applytmpl < Dockerfile.tmpl > Dockerfile ; then
+    echo Error processing template
+    exit 1
+fi
+docker build --no-cache --tag=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION} .
+docker push ${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION}
 set -x

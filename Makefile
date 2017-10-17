@@ -3,13 +3,14 @@ $(info BUILD_SETUP not set, run from the ./build command which sets the environm
 $(info You can configure the environment with the container versions in the environment file)
 $(error Unconfigured environment or running with make not the build script)
 endif
+.PHONY: .server .client
 
+all:	.server .client .yaml
+# server/built.debian.${DEBIAN_RELEASE}.glusterfs.${GFS_VERSION}	\
+# client/built.debian.${DEBIAN_RELEASE}.glusterfs.${GFS_VERSION}	\
+# server/all-in-one.yaml
 
-
-all:										\
-	server/built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}	\
-	client/built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}	\
-	server/all-in-one.yaml
+.yaml: server/all-in-one.yaml
 
 .server: environment Makefile server/build server/Dockerfile.tmpl
 	make -C server -f ../Makefile bld-server
@@ -19,20 +20,20 @@ all:										\
 bld-server:
 	@echo Building $@
 	./build
-	touch built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}
+	touch built.debian.${DEBIAN_RELEASE}.glusterfs.${GFS_VERSION}
 	@echo Complete $@
 
 bld-client:
 	@echo Building $@
 	./build
-	touch built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}
+	touch built.debian.${DEBIAN_RELEASE}.glusterfs.${GFS_VERSION}
 	@echo Complete $@
 
-client/built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}: .client
-	touch $@ $<
+client/built.debian.${DEBIAN_RELEASE}.glusterfs.${GFS_VERSION}: .client
+	touch $@
 
-server/built.debian.${DEBIAN_RELEASE}.glusterfs.${GLUSTERFS_VERSION}: .server
-	touch $@ $<
+server/built.debian.${DEBIAN_RELEASE}.glusterfs.${GFS_VERSION}: .server
+	touch $@
 
-server/all-in-one.yaml: server/all-in-one.yaml.tmpl
+server/all-in-one.yaml: server/all-in-one.yaml.tmpl environment Makefile
 	applytmpl < $< > $@
