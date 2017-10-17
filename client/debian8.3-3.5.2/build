@@ -1,1 +1,0 @@
-docker build -t glusterfs/client/debian8.3-3.5.2 .

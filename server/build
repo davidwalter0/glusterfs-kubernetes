@@ -1,0 +1,11 @@
+#!/bin/bash
+if [[ "$(which applytmpl)" == "" ]]; then
+    if ! go get --tags netgo -ldflags '-w -s' github.com/davidwalter0/applytmpl; then
+        echo applytmpl build failed
+        exit 1
+    fi
+fi
+. ../environment
+applytmpl < Dockerfile.tmpl > Dockerfile 
+docker build --tag=${DOCKER_UID}/glusterfs-server:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION} .
+docker push ${DOCKER_UID}/glusterfs-server:debian${DEBIAN_RELEASE}-${GLUSTERFS_VERSION}
