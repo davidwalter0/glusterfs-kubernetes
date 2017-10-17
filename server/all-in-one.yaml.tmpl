@@ -65,8 +65,8 @@ spec:
   - name: nfs-portmap
     port: 2049
     targetPort: 2049
-  # selector:
-  #   component: {{ env "GFS_STORAGE" }}
+  selector:
+    app: {{ env "GFS_STORAGE" }}
 ---
 kind: StatefulSet
 apiVersion: apps/v1beta1
@@ -80,10 +80,10 @@ spec:
   template:
     metadata:
       labels:
-        component: {{ env "GFS_STORAGE" }}
+        app: {{ env "GFS_STORAGE" }}
     spec:
-      # nodeSelector:
-      #   gluster.io/schedulable: "true"
+      nodeSelector:
+        gluster.io/schedulable: "true"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -151,10 +151,10 @@ spec:
   template:
     metadata:
       labels:
-        component: {{ env "GFS_CLIENT_NAME" }}
+        app: {{ env "GFS_STORAGE" }}
     spec:
-      # nodeSelector:
-      #   gluster.io/schedulable: "true"
+      nodeSelector:
+        gluster.io/schedulable: "true"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
