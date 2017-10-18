@@ -1,7 +1,8 @@
 #!/bin/bash
 export BUILD_SETUP=1
 export DOCKER_UID=davidwalter
-export DEBIAN_RELEASE=8.9
+export DEBIAN_RELEASE=9.2
+export DEBIAN_RELEASE_NAME=stretch
 export GFS_VERSION_MAJOR=3.12
 export GFS_VERSION_MINOR=2
 export GFS_VERSION=${GFS_VERSION_MAJOR}.${GFS_VERSION_MINOR}

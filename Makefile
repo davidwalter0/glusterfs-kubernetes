@@ -3,7 +3,7 @@ $(info BUILD_SETUP not set, run from the ./build command which sets the environm
 $(info You can configure the environment with the container versions in the environment file)
 $(error Unconfigured environment or running with make not the build script)
 endif
-.PHONY: .server .client
+.PHONY: .server .client .yaml
 
 all:	.server .client .yaml
 # server/built.debian.${DEBIAN_RELEASE}.glusterfs.${GFS_VERSION}	\

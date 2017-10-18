@@ -139,8 +139,8 @@ spec:
         - name: local0
           emptyDir: {}
 ---
-kind: StatefulSet
-apiVersion: apps/v1beta1
+kind: ReplicaSet
+apiVersion: v1
 metadata:
   labels:
     component: {{ env "GFS_CLIENT_NAME" }}
@@ -151,7 +151,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ env "GFS_STORAGE" }}
+        app: {{ env "GFS_CLIENT_NAME" }}
     spec:
       nodeSelector:
         gluster.io/schedulable: "true"

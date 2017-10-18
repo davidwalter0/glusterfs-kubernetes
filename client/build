@@ -11,6 +11,7 @@ if ! applytmpl < Dockerfile.tmpl > Dockerfile ; then
     echo Error processing template
     exit 1
 fi
+
 docker build --no-cache --tag=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION} .
 docker push ${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION}
 set -x
