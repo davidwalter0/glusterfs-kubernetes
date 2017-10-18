@@ -1,3 +1,11 @@
+add anti affinity rule
+
+BUGS: client is crashing
+
+TODO: need to convert to use multiple containers in the pod and allow
+natural pod processes mgmt instead of using supervisord or some other
+alternative
+
 glusterfs-kubernetes
 ====================
 

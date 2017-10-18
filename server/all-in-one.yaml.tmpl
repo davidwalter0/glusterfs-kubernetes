@@ -31,7 +31,8 @@ metadata:
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ env "GFS_SERVICE" }}
+  name: {{env "GFS_SERVICE" }}
+  namespace: {{env "NAMESPACE" }}
 spec:
   ports:
   - name: ssh
@@ -66,21 +67,22 @@ spec:
     port: 2049
     targetPort: 2049
   selector:
-    app: {{ env "GFS_STORAGE" }}
+    app: {{env "GFS_STORAGE" }}
 ---
 kind: StatefulSet
 apiVersion: apps/v1beta1
 metadata:
   labels:
-    component: {{ env "GFS_STORAGE" }}
-  name: {{ env "GFS_STORAGE" }}
+    component: {{env "GFS_STORAGE" }}
+  name: {{env "GFS_STORAGE" }}
+  namespace: {{env "NAMESPACE" }}
 spec:
-  serviceName: {{ env "GFS_SERVICE" }}
+  serviceName: {{env "GFS_SERVICE" }}
   replicas: 2
   template:
     metadata:
       labels:
-        app: {{ env "GFS_STORAGE" }}
+        app: {{env "GFS_STORAGE" }}
     spec:
       nodeSelector:
         gluster.io/schedulable: "true"
@@ -92,10 +94,18 @@ spec:
                 - key: "gluster.io/schedulable"
                   operator: In
                   values: ["true"]
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values: ['{{env "GFS_STORAGE"}}']
+            topologyKey: 'kubernetes.io/hostname'
       serviceAccount: glusterfs
       containers:
-      - name: {{ env "GFS_SERVER_NAME" }}
-        image: {{ env "GFS_SERVER_IMAGE" }}
+      - name: {{env "GFS_SERVER_NAME" }}
+        image: {{env "GFS_SERVER_IMAGE" }}
         resources:
           requests:
             memory: "64Mi"
@@ -106,7 +116,7 @@ spec:
         securityContext:
           privileged: true
         ports:
-        - containerPort: {{ env "SSH_PORT" }}
+        - containerPort: {{env "SSH_PORT" }}
         - containerPort: 24007
         - containerPort: 24008
         - containerPort: 49152
@@ -125,33 +135,49 @@ spec:
         - name: GLUSTER_BRICK_PATH
           value: /gluster_volume
         - name: SERVICE_NAME
-          value: {{ env "GFS_SERVICE" }}.default.svc.cluster.local
+          value: {{env "GFS_SERVICE" }}.default.svc.cluster.local
         - name: ROOT_PASSWORD
           value: container_root_password
         - name: DEBUG
           value: "1"
         - name: SSH_PORT
-          value: '{{ env "SSH_PORT" }}'
+          value: '{{env "SSH_PORT" }}'
         volumeMounts:
           - name: local0
             mountPath: /gluster_volume
       volumes:
         - name: local0
           emptyDir: {}
+
 ---
-kind: ReplicaSet
+kind: Service
 apiVersion: v1
 metadata:
-  labels:
-    component: {{ env "GFS_CLIENT_NAME" }}
-  name: {{ env "GFS_CLIENT_NAME" }}
+  name: {{env "GFS_CLIENT_NAME" }}
+  namespace: {{env "NAMESPACE" }}
 spec:
-  serviceName: {{ env "GFS_SERVICE" }}
+  ports:
+  - name: ssh
+    port: 2222
+    targetPort: 2222
+  selector:
+    app: {{env "GFS_CLIENT_NAME" }}
+
+---
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  labels:
+    component: {{env "GFS_CLIENT_NAME" }}
+  name: {{env "GFS_CLIENT_NAME" }}
+  namespace: {{env "NAMESPACE" }}
+spec:
+  serviceName: {{env "GFS_SERVICE" }}
   replicas: 2
   template:
     metadata:
       labels:
-        app: {{ env "GFS_CLIENT_NAME" }}
+        app: {{env "GFS_CLIENT_NAME" }}
     spec:
       nodeSelector:
         gluster.io/schedulable: "true"
@@ -163,10 +189,20 @@ spec:
                 - key: "gluster.io/schedulable"
                   operator: In
                   values: ["true"]
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values: ['{{env "GFS_CLIENT_NAME"}}']
+            topologyKey: 'kubernetes.io/hostname'
       serviceAccount: glusterfs
       containers:
-      - name: {{ env "GFS_CLIENT_NAME" }}
-        image: {{ env "GFS_CLIENT_IMAGE" }}
+      - name: {{env "GFS_CLIENT_NAME" }}
+        image: {{env "GFS_CLIENT_IMAGE" }}
+        ports:
+        - containerPort: 2222
         resources:
           requests:
             memory: "64Mi"
@@ -178,16 +214,16 @@ spec:
           privileged: true
         env:
         - name: GLUSTER_VOLUME_SERVER
-          value: {{ env "GFS_SERVICE" }}.default.svc.cluster.local
+          value: '{{env "GFS_SERVICE" }}.{{env "NAMESPACE"}}.svc.cluster.local'
         - name: GLUSTER_VOLUMEID
-          value: {{ env "GLUSTER_VOL" }}
+          value: '{{env "GLUSTER_VOL" }}'
         - name: GLUSTER_MOUNTPOINT
-          value: {{ env "GLUSTER_BRICK_PATH" }}/{{ env "GLUSTER_VOL" }}
+          value: '{{env "GLUSTER_BRICK_PATH" }}/{{env "GLUSTER_VOL" }}'
         volumeMounts:
-          - name: {{ env "GLUSTER_VOL" }}
-            mountPath: {{ env "GLUSTER_BRICK_PATH" }}
+          - name: {{env "GLUSTER_VOL" }}
+            mountPath: '{{env "GLUSTER_BRICK_PATH" }}'
       volumes:
-        - name: {{ env "GLUSTER_VOL" }}
+        - name: {{env "GLUSTER_VOL" }}
           emptyDir: {}
 
 
