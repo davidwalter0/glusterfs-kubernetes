@@ -1,3 +1,16 @@
+# ------------------------------------------------------------------------
+# on ubuntu 17.04 default install with ext4 file system, aufs failed
+# with kernel 4.13.0-12-generic, had to modify /etc/docker/daemon.json
+# to use overlay2
+# {
+#   "storage-driver": "overlay2"
+# }
+# ------------------------------------------------------------------------
+# container_linux.go:247: starting container process caused
+# "process_linux.go:359: container init caused \"rootfs_linux.go:54:
+# mounting \\\"cgroup\\\" to rootfs \\\"/var/lib/docker/auf
+# ------------------------------------------------------------------------
+
 FROM debian:{{env "DEBIAN_RELEASE"}}
 
 ENV GFS_VERSION_MAJOR={{env "GFS_VERSION_MAJOR"}}
@@ -12,20 +25,46 @@ ENV MAX_VOLUMES=1
 ENV DEBUG=0 
 ENV SSH_PORT={{env "SSH_PORT"}}
 ENV SSH_USER=root
+ENV container docker
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
+ENV init /lib/systemd/systemd
 
+RUN echo 'APT::Install-Recommends "0"; \n\
+APT::Get::Assume-Yes "true"; \n\
+APT::Get::force-yes "true"; \n\
+APT::Install-Suggests "0";' > /etc/apt/apt.conf.d/01buildconfig
+
+RUN mkdir -p  /etc/apt/sources.d/
+RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt {{env "DEBIAN_RELEASE_NAME"}} main restricted universe multiverse \n\
+deb mirror://mirrors.ubuntu.com/mirrors.txt {{env "DEBIAN_RELEASE_NAME"}}-updates main restricted universe multiverse \n\
+deb mirror://mirrors.ubuntu.com/mirrors.txt {{env "DEBIAN_RELEASE_NAME"}}-backports main restricted universe multiverse \n\
+deb mirror://mirrors.ubuntu.com/mirrors.txt {{env "DEBIAN_RELEASE_NAME"}}-security main restricted universe multiverse" > /etc/apt/sources.d/ubuntu-mirrors.list
 # execute this on its own as it contains references to previous call
 ENV SSH_OPTS="-p {{env "SSH_PORT"}} -o ConnectTimeout=20 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 ADD root /
 
-RUN apt-get update && mkdir -p /etc/ssh && apt-get install -y wget gnupg2 ca-certificates apt-transport-https &&  \
-    printf "deb http://http.us.debian.org/debian {{env "DEBIAN_RELEASE_NAME"}}-updates main\n\n" >> /etc/apt/sources.list && \
+RUN apt-get update && mkdir -p /etc/ssh && apt-get install -y systemd systemd-container wget gnupg2 ca-certificates apt-transport-https
+
+RUN cd /lib/systemd/system/sysinit.target.wants/; ls | grep -v systemd-tmpfiles-setup | xargs rm -f $1 \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*; \
+rm -f /lib/systemd/system/plymouth*; \
+rm -f /lib/systemd/system/systemd-update-utmp*;
+
+RUN printf "deb http://http.us.debian.org/debian {{env "DEBIAN_RELEASE_NAME"}}-updates main\n\n" >> /etc/apt/sources.list && \
     printf "deb http://http.us.debian.org/debian {{env "DEBIAN_RELEASE_NAME"}}-backports main\n\n" >> /etc/apt/sources.list && \
     wget -O - http://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_MAJOR"}}/rsa.pub | apt-key add - && \
     echo deb https://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_MAJOR"}}/LATEST/Debian/{{env "DEBIAN_RELEASE_NAME"}}/apt {{env "DEBIAN_RELEASE_NAME"}} main > /etc/apt/sources.list.d/gluster.list && \
-    apt-get update && apt-get install -y supervisor openssh-server dnsutils sshpass apt-transport-https &&  \
+    apt-get update && apt-get install -y openssh-server dnsutils sshpass apt-transport-https &&  \
     apt-get dist-upgrade -y && \
-    apt-get install -y wget ca-certificates systemd-container && \
+    apt-get install -y wget ca-certificates && \
     wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb && \
     apt-get install -yqq \
     glusterfs-common={{env "GFS_VERSION"}}*    \
@@ -37,8 +76,23 @@ RUN apt-get update && mkdir -p /etc/ssh && apt-get install -y wget gnupg2 ca-cer
     perl -p -i -e "s/#?PasswordAuthentication .*/PasswordAuthentication yes/g" /etc/ssh/sshd_config && \
     perl -p -i -e "s/#?PermitRootLogin .*/PermitRootLogin yes/g" /etc/ssh/sshd_config && \
     grep ClientAliveInterval /etc/ssh/sshd_config >/dev/null 2>&1 || echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config && \
-    chmod +x /usr/local/bin/*
+    chmod +x /usr/local/bin/* && \
+    apt-get clean
+# && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+RUN systemctl set-default multi-user.target
 
-VOLUME [ '{{env "GLUSTER_BRICK_PATH"}}' ]
+# CMD ["/usr/local/bin/run.sh"]
+# docker build --no-cache --tag=ubuntu-systemd .&
+# RUN apt-get update && apt-get install glusterfs-server \
+#     glusterfs-client systemd systemd-container && apt-get clean && rm -rf \
+#     /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-CMD ["/usr/local/bin/run.sh"]
+VOLUME '{{env "GLUSTER_BRICK_PATH"}}'
+VOLUME "/sys/fs/cgroup"
+# docker run -it --privileged=true -v /sys/fs/cgroup:/sys/fs/cgroup:ro 444c127c995b /lib/systemd/systemd systemd.unit=emergency.service
+# docker run -ti --rm -P --cap-add=SYS_ADMIN -v /sys/fs/cgroup:/sys/fs/cgroup:ro --log-driver=syslog --log-opt tag="poc-systemd" bronto/poc-systemd
+ENTRYPOINT ["/lib/systemd/systemd"]
+
+# local variables:
+# mode: conf
+# end:

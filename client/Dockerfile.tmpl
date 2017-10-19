@@ -1,6 +1,6 @@
-FROM debian:{{env "DEBIAN_RELEASE"}}
+FROM {{env "GFS_SERVER_IMAGE"}}
 
-ENV GLUSTER_MOUNTPOINT=/gluster_mount/shared0
+ENV GLUSTER_MOUNTPOINT={{env "GLUSTER_MOUNTPOINT"}}
 ENV GFS_VERSION={{env "GFS_VERSION"}}
 ENV GFS_VERSION_MINOR={{env "GFS_VERSION_MINOR"}}
 ENV GFS_VERSION={{env "GFS_VERSION"}}
@@ -8,24 +8,10 @@ ENV GFS_VERSION_PATH={{env "GFS_VERSION"}}/{{env "GFS_VERSION"}}
 
 COPY root /
 
-RUN apt-get update && mkdir -p /etc/ssh && apt-get install -y wget gnupg2 ca-certificates apt-transport-https &&  \
-    printf "deb http://http.us.debian.org/debian {{env "DEBIAN_RELEASE_NAME"}}-updates main\n\n" >> /etc/apt/sources.list && \
-    printf "deb http://http.us.debian.org/debian {{env "DEBIAN_RELEASE_NAME"}}-backports main\n\n" >> /etc/apt/sources.list && \
-    wget -O - http://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_MAJOR"}}/rsa.pub | apt-key add - && \
-    echo deb https://download.gluster.org/pub/gluster/glusterfs/{{env "GFS_VERSION_MAJOR"}}/LATEST/Debian/{{env "DEBIAN_RELEASE_NAME"}}/apt {{env "DEBIAN_RELEASE_NAME"}} main > /etc/apt/sources.list.d/gluster.list && \
-    apt-get update && apt-get install -y supervisor openssh-server dnsutils sshpass apt-transport-https &&  \
-    apt-get dist-upgrade -y && \
-    apt-get install -y wget ca-certificates systemd-container && \
-    wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb && \
-    apt-get install -yqq \
-    glusterfs-common={{env "GFS_VERSION"}}*    \
-    glusterfs-client={{env "GFS_VERSION"}}*    \
-    glusterfs-server={{env "GFS_VERSION"}}* && \
-    apt-get autoclean && \
-    dpkg -i dumb-init_1.1.1_amd64.deb && \
-    apt-get autoremove -y && \
-    chmod +x /usr/local/bin/*
+VOLUME {{env "GLUSTER_MOUNTPOINT"}}
 
-VOLUME ["${GLUSTER_MOUNTPOINT}"]
+ENTRYPOINT ["/usr/local/bin/run-init.sh"]
 
-CMD ["/usr/local/bin/run-init.sh"]
+# local variables:
+# mode: conf
+# end:

@@ -12,6 +12,6 @@ if ! applytmpl < Dockerfile.tmpl > Dockerfile ; then
     exit 1
 fi
 
-docker build --no-cache --tag=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION} .
-docker push ${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION}
+docker build --no-cache --tag=${GFS_CLIENT_IMAGE} .
+docker push ${GFS_CLIENT_IMAGE}
 set -x

@@ -10,7 +10,7 @@ export GFS_VERSION=${GFS_VERSION_MAJOR}.${GFS_VERSION_MINOR}
 export GFS_VERSION_PATH=${GFS_VERSION_MAJOR}/${GFS_VERSION}
 export SSH_PORT=2222
 export GLUSTER_VOL=vol0
-export GLUSTER_BRICK_PATH=/gluster_volume
+export GLUSTER_BRICK_PATH=/gfs
 # if you need more version specific services
 # export GFS_SERVER_NAME=gfs-${GFS_VERSION_MAJOR/./-}d${DEBIAN_RELEASE/./-}-sv
 # export GFS_CLIENT_NAME=gfs-${GFS_VERSION_MAJOR/./-}d${DEBIAN_RELEASE/./-}-cl
@@ -21,8 +21,8 @@ export GFS_CLIENT_NAME=gfs-client
 export GFS_STORAGE=gfs-stor
 export GFS_SERVICE=gfs
 
-export GFS_SERVER_IMAGE=${DOCKER_UID}/glusterfs-server:debian${DEBIAN_RELEASE}-${GFS_VERSION}
-export GFS_CLIENT_IMAGE=${DOCKER_UID}/glusterfs-client:debian${DEBIAN_RELEASE}-${GFS_VERSION}
+export GFS_SERVER_IMAGE=${DOCKER_UID}/gfs:${DEBIAN_RELEASE}-${GFS_VERSION}
+export GFS_CLIENT_IMAGE=${DOCKER_UID}/gfs-c:${DEBIAN_RELEASE}-${GFS_VERSION}
 
 # root/usr/local/bin/run-init.sh
 export GLUSTER_MOUNTPOINT=${GLUSTER_BRICK_PATH}/${GLUSTER_VOL}
