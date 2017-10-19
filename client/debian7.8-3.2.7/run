@@ -1,5 +1,0 @@
-docker run --rm -it -e "GLUSTER_VOLUME_SERVER=gfs-strg-d78-327.default.svc.cluster.local" -e "GLUSTER_VOLUMEID=shared0" --privileged glusterfs/client/debian7.8-3.2.7 bash
-
-
-
-docker run -d -e "GLUSTER_VOLUME_SERVER=gfs-strg-d78-327.default.svc.cluster.local" -e "GLUSTER_VOLUMEID=shared0" --privileged glusterfs/client/debian7.8-3.2.7
